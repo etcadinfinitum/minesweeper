@@ -1,0 +1,61 @@
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+
+public class MinesweeperView extends JPanel implements Subject {
+    
+    private JPanel gamePanel;
+    private ArrayList<Observer> myObservers;
+    private JButton newGame;
+    private JButton highScores;
+    private JButton[][] gameBoard;
+    
+    public MinesweeperView() {
+        setSize(600,600);
+        setLocation(100, 100);
+        setVisible(true);
+        
+        gamePanel = new JPanel();
+        getContentPane().add(gamePanel);
+        
+        generateMenu();
+    }
+    
+    public boolean generateMenu() {
+        gamePanel.removeAll();
+        
+        
+    }
+    
+    public boolean generateBoard(int boardSize) {
+        
+        return true;
+    }
+    
+    
+    
+    
+    
+    
+    
+    public void addObserver(Observer o) {
+        myObservers.add(o);
+    }
+    
+    public void removeObserver(Observer o) {
+        myObservers.remove(o);
+    }
+    
+    public void notifyObservers() {
+        for (Observer o : myObservers) {
+            o.getUpdate();
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+}
