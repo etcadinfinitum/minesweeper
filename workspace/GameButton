@@ -1,0 +1,27 @@
+import javax.swing.JButton;
+
+public class GameButton extends JButton {
+  
+    private boolean isBomb;
+    private int displayNumber;
+  
+    public GameButton(boolean isBomb) {
+        if (isBomb) {
+            this.isBomb = true;
+        } else {
+            this.isBomb = false;
+        }
+      
+    }
+  
+    public boolean setDisplayNumber(int num) {
+        boolean hasNum = false;
+        if (!isBomb && num != 0) {
+            displayNumber = num;
+            hasNum = true;
+        }
+        
+        return hasNum;
+    }
+  
+}

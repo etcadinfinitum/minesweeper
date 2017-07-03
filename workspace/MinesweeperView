@@ -1,6 +1,11 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JButton;
+import java.util.Math;
+import java.util.ArrayList;
+import java.awt.ActionListener;
+import java.awt.ActionEvent;
+
 
 public class MinesweeperView extends JPanel implements Subject {
     
@@ -8,7 +13,6 @@ public class MinesweeperView extends JPanel implements Subject {
     private ArrayList<Observer> myObservers;
     private JButton newGame;
     private JButton highScores;
-    private JButton[][] gameBoard;
     
     public MinesweeperView() {
         setSize(600,600);
@@ -24,18 +28,37 @@ public class MinesweeperView extends JPanel implements Subject {
     public boolean generateMenu() {
         gamePanel.removeAll();
         
+        newGame = new JButton("New Game");
+        newGame.setBounds(Math.floor((getContentPane().WIDTH - 100)/2), 75, 100, 50);
+        newGame.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                notifyObservers();
+            }
+        });
+        gamePanel.add(newGame);
+        
+        highScores = new JButton("High Scores");
+        highScores.setBounds((getContentPane().WIDTH - 100)/2, 150, 100, 50);
+        highScores.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                notifyObservers();
+            }
+        });
         
     }
     
-    public boolean generateBoard(int boardSize) {
-        
-        return true;
+
+    
+    
+    public void displayBoard(JButton[][] newBoard) {
+        for (int row = 0; row < newBoard.length; row++) {
+            for (int col = 0; col < newBoard[row].length; col++) {
+                gamePanel.add(newBoard[row][col]);
+                
+            }
+        }
+        this.repaint();
     }
-    
-    
-    
-    
-    
     
     
     public void addObserver(Observer o) {

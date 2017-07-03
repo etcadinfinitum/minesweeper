@@ -1,3 +1,34 @@
+import javax.swing.JButton;
+
 public class MinesweeperModel {
+    
+    public MinesweeperModel() {
+        
+    }
+  
+    public JButton[][] generateBoard(int boardSize) {
+        JButton[][] gameBoard = new JButton[boardSize][boardSize];
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                gameBoard[row][col] = new JButton();
+                gameBoard[row][col].addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        notifyObservers();
+                    }
+                });
+            }
+        }
+        
+        return gameBoard;
+    }
+    
+    
+    private void determineMines(int boardSize) {
+        
+    }
+  
+    private void determineDisplayNumbers() {
+        
+    }
     
 }
