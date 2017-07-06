@@ -13,6 +13,7 @@ public class MinesweeperView extends JPanel implements Observer {
     private static boolean activeGame;
     private JButton newGame;
     private JButton highScores;
+    private JPanel[][] gameBoard;
     
     public MinesweeperView() {
         setSize(600,600);
@@ -32,10 +33,11 @@ public class MinesweeperView extends JPanel implements Observer {
         newGame.setBounds(Math.floor((getContentPane().WIDTH - 100)/2), 75, 100, 50);
         newGame.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                activeGame = true;
                 notifyObservers();
             }
         });
-        gamePanel.add(newGame);
+        gamePanel.add(newGame); 
         
         highScores = new JButton("High Scores");
         highScores.setBounds((getContentPane().WIDTH - 100)/2, 150, 100, 50);
@@ -48,8 +50,8 @@ public class MinesweeperView extends JPanel implements Observer {
     }
     
 
-    public JPanel[][] generateBoard(int boardWidth, int boardHeight) {
-        JPanel[][] gameBoard = new JPanel[boardWidth][boardHeight];
+    public void generateBoard(int boardWidth, int boardHeight) {
+        gameBoard = new JPanel[boardWidth][boardHeight];
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 gameBoard[row][col] = new JPanel();
@@ -57,18 +59,19 @@ public class MinesweeperView extends JPanel implements Observer {
                 gameBoard[row][col].addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         notifyObservers();
+                        
                     }
                 });
             }
         }
         
-        return gameBoard;
     }    
     
-    public void displayBoard(JButton[][] newBoard) {
-        for (int row = 0; row < newBoard.length; row++) {
-            for (int col = 0; col < newBoard[row].length; col++) {
-                gamePanel.add(newBoard[row][col]);
+    public void displayBoard() {
+        gamePanel.removeAll();
+        for (int row = 0; row < gameBoard.length; row++) {
+            for (int col = 0; col < gameBoard[row].length; col++) {
+                gamePanel.add(gameBoard[row][col]);
                 
             }
         }
@@ -78,7 +81,7 @@ public class MinesweeperView extends JPanel implements Observer {
     
 
   public void update(Observable o, Object arg) {
-      
+      displayBoard();
       
   }
     
