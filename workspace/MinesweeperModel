@@ -1,33 +1,35 @@
-import javax.swing.JButton;
+import java.util.Observable;
 
-public class MinesweeperModel {
+public enum GameDifficulty {
+    EASY, MEDIUM, HARD
+}
+
+public class MinesweeperModel implements Observable {
     
-    public MinesweeperModel() {
-        
+    public MinesweeperModel(int boardHeight, boardWidth, GameDifficulty diff) {
+        determineSegmentMines
     }
   
-    public JButton[][] generateBoard(int boardSize) {
-        JButton[][] gameBoard = new JButton[boardSize][boardSize];
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
-                gameBoard[row][col] = new JButton();
-                gameBoard[row][col].addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        notifyObservers();
-                    }
-                });
-            }
+
+    
+    
+    private void determineSegmentMines(int boardHeight, boardWidth, GameDifficulty diff) {
+        int mineQty = boardHeight * boardWidth;
+        switch (diff) {
+            case EASY: mineQty = Math.floor(mineQty / 10);
+                break;
+            case MEDIUM: mineQty = Math.floor(mineQty / 8);
+                break;
+            case HARD: mineQty = Math.floor (mineQty / 6);
+                break;
         }
         
-        return gameBoard;
-    }
-    
-    
-    private void determineMines(int boardSize) {
-        
+        for (int i = 1; i <= mineQty; i++) {
+            
+        }
     }
   
-    private void determineDisplayNumbers() {
+    private void determineSegmentValue() {
         
     }
     

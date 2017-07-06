@@ -7,10 +7,10 @@ import java.awt.ActionListener;
 import java.awt.ActionEvent;
 
 
-public class MinesweeperView extends JPanel implements Subject {
+public class MinesweeperView extends JPanel implements Observer {
     
     private JPanel gamePanel;
-    private ArrayList<Observer> myObservers;
+    private static boolean activeGame;
     private JButton newGame;
     private JButton highScores;
     
@@ -48,7 +48,22 @@ public class MinesweeperView extends JPanel implements Subject {
     }
     
 
-    
+    public JPanel[][] generateBoard(int boardWidth, int boardHeight) {
+        JPanel[][] gameBoard = new JPanel[boardWidth][boardHeight];
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                gameBoard[row][col] = new JPanel();
+                gameBoard[row][col].setBounds(row * 10, col * 10, 10, 10);
+                gameBoard[row][col].addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        notifyObservers();
+                    }
+                });
+            }
+        }
+        
+        return gameBoard;
+    }    
     
     public void displayBoard(JButton[][] newBoard) {
         for (int row = 0; row < newBoard.length; row++) {
@@ -61,19 +76,11 @@ public class MinesweeperView extends JPanel implements Subject {
     }
     
     
-    public void addObserver(Observer o) {
-        myObservers.add(o);
-    }
-    
-    public void removeObserver(Observer o) {
-        myObservers.remove(o);
-    }
-    
-    public void notifyObservers() {
-        for (Observer o : myObservers) {
-            o.getUpdate();
-        }
-    }
+
+  public void update(Observable o, Object arg) {
+      
+      
+  }
     
     
     
