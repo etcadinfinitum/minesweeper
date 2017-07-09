@@ -1,0 +1,25 @@
+public class GameSquare {
+
+    private boolean isMine;
+    private int mineHint;
+    
+    public GameSquare() {
+        
+    }
+  
+    public void setBomb(boolean isBomb) {
+        isMine = isBomb;
+    }
+  
+    public boolean getBomb() {
+        return isMine;
+    }
+  
+    public boolean incrementHint() {
+        mineHint++;
+    }
+    
+    public int getHint() {
+        return mineHint;
+    }
+}

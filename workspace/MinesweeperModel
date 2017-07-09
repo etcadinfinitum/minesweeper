@@ -5,16 +5,20 @@ public enum GameDifficulty {
 }
 
 public class MinesweeperModel implements Observable {
+
+    private GameSquare[][] squareTraits;
     
     public MinesweeperModel(int boardHeight, boardWidth, GameDifficulty diff) {
-        determineSegmentMines
+        squareTraits = new GameSquare[boardWidth][boardHeight];
+        determineSegmentMines(diff);
+        determineSegmentValue();
     }
   
 
     
     
-    private void determineSegmentMines(int boardHeight, boardWidth, GameDifficulty diff) {
-        int mineQty = boardHeight * boardWidth;
+    private void determineSegmentMines(GameDifficulty diff) {
+        int mineQty = squareTraits.length * squareTraits[0].length;
         switch (diff) {
             case EASY: mineQty = Math.floor(mineQty / 10);
                 break;
@@ -25,12 +29,51 @@ public class MinesweeperModel implements Observable {
         }
         
         for (int i = 1; i <= mineQty; i++) {
-            
+            boolean isValid = false;
+            while (!isValid) {
+                //int mineX = Math.random(boardWidth);
+                //int mineY = Math.random(boardHeight);
+                if (!squareTraits[mineX][mineY].getBomb()) {
+                    squareTraits[mineX][mineY].setBomb(true);
+                    isValid = true;
+                }
+            }
         }
+        
     }
   
     private void determineSegmentValue() {
-        
+        for (int row = 0; row < squareTraits.length; row++) {
+            for (int col = 0; col < squareTraits[row].length; col++) {
+                if (squareTraits[row][col].getBomb()) {
+                for (int checkRow = -1; checkRow < 2; checkRow++) {
+                    for (int checkCol = -1; checkCol < 2; checkCol++) {
+                        if (checkRow + row >= 0 && checkCol + col >= 0 && 
+                            checkRow + row < squareTraits.length && 
+                            checkCol + col < squareTraits[row].length) {
+                            squareTraits[checkRow][checkCol].incrementHint();
+                            
+                        }
+                    }
+                }                  
+                }
+
+                
+            }
+        }
     }
+  
+  
+    /*
+    External accessors and manipulators below
+    */
     
+    
+    public GameSquare[][] getBoardState() {
+        return squareTraits;
+    }
+  
+    public GameSquare getSquareState(int row, int col) {
+        return squareTraits[row][col];
+    }
 }
