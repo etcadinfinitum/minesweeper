@@ -1,38 +1,44 @@
 import java.util.Observable;
 
-public enum GameDifficulty {
-    EASY, MEDIUM, HARD
-}
 
-public class MinesweeperModel implements Observable {
-
-    private GameSquare[][] squareTraits;
+public class MinesweeperModel {/// implements Observable {
     
-    public MinesweeperModel(int boardHeight, boardWidth, GameDifficulty diff) {
+    
+    public enum GameDifficulty {
+        EASY, MEDIUM, HARD
+    }
+    
+    private GameSquare[][] squareTraits;
+    private boolean activeGame;
+    
+    public MinesweeperModel(int boardHeight, int boardWidth, GameDifficulty diff) {
+        activeGame = true;
         squareTraits = new GameSquare[boardWidth][boardHeight];
+        for (int row = 0; row < squareTraits.length; row++) {
+            for (int col = 0; col < squareTraits[row].length; col++) {
+                squareTraits[row][col] = new GameSquare();
+            }
+        }
         determineSegmentMines(diff);
         determineSegmentValue();
     }
-  
-
-    
     
     private void determineSegmentMines(GameDifficulty diff) {
         int mineQty = squareTraits.length * squareTraits[0].length;
         switch (diff) {
-            case EASY: mineQty = Math.floor(mineQty / 10);
+            case EASY: mineQty = (int)Math.floor(mineQty / 10);
                 break;
-            case MEDIUM: mineQty = Math.floor(mineQty / 8);
+            case MEDIUM: mineQty = (int)Math.floor(mineQty / 8);
                 break;
-            case HARD: mineQty = Math.floor (mineQty / 6);
+            case HARD: mineQty = (int)Math.floor (mineQty / 6);
                 break;
         }
         
         for (int i = 1; i <= mineQty; i++) {
             boolean isValid = false;
             while (!isValid) {
-                //int mineX = Math.random(boardWidth);
-                //int mineY = Math.random(boardHeight);
+                int mineX = (int)Math.floor(Math.random() * squareTraits.length);
+                int mineY = (int)Math.floor(Math.random() * squareTraits[0].length);
                 if (!squareTraits[mineX][mineY].getBomb()) {
                     squareTraits[mineX][mineY].setBomb(true);
                     isValid = true;
@@ -46,16 +52,42 @@ public class MinesweeperModel implements Observable {
         for (int row = 0; row < squareTraits.length; row++) {
             for (int col = 0; col < squareTraits[row].length; col++) {
                 if (squareTraits[row][col].getBomb()) {
-                for (int checkRow = -1; checkRow < 2; checkRow++) {
-                    for (int checkCol = -1; checkCol < 2; checkCol++) {
-                        if (checkRow + row >= 0 && checkCol + col >= 0 && 
-                            checkRow + row < squareTraits.length && 
-                            checkCol + col < squareTraits[row].length) {
+                    /*
+                    It would be wise to set up recursive method for incrementing
+                    surrounding squares?
+                    */
+                    
+                    int rowMin;
+                    int rowMax;
+                    int colMin;
+                    int colMax;
+                    if (row == 0) {
+                        rowMin = 0;
+                    } else {
+                        rowMin = -1;
+                    }
+                    if (row == squareTraits.length - 1) {
+                        rowMax = 0;
+                    } else {
+                        rowMax = 1;
+                    }
+                    if (col == 0) {
+                        colMin = 0;
+                    } else {
+                        colMin = -1;
+                    }
+                    if (col == squareTraits[row].length - 1) {
+                        colMax = 0;
+                    } else {
+                        colMax = 1;
+                    }
+                    
+                    for (int checkRow = (row + rowMin); checkRow <= (row + rowMax); checkRow++) {
+                        for (int checkCol = (col + colMin); checkCol <= (col + colMax); checkCol++) {
                             squareTraits[checkRow][checkCol].incrementHint();
-                            
                         }
                     }
-                }                  
+                    
                 }
             }
         }
@@ -66,6 +98,36 @@ public class MinesweeperModel implements Observable {
     External accessors and manipulators below
     */
     
+    public void changeBoardState(int buttonX, int buttonY) {
+        if (squareTraits[buttonX][buttonY].getBomb()) {
+            activeGame = false;
+            for (int row = 0; row < squareTraits.length; row++) {
+                for (int col = 0; col < squareTraits[row].length; col++) {
+                    if (squareTraits[row][col].getBomb()) {
+                        squareTraits[row][col].clicked();
+                    }
+                }
+            }
+        } else {
+            uncoverSquares(buttonX, buttonY);
+        }
+    }
+    
+    private void uncoverSquares(int startX, int startY) {
+        if (squareTraits[startX][startY].getHint() != 0) {
+            squareTraits[startX][startY].clicked();
+        } else {
+            squareTraits[startX][startY].clicked();
+            uncoverSquares(startX + 1, startY);
+            uncoverSquares(startX + 1, startY + 1);
+            uncoverSquares(startX, startY + 1);
+            uncoverSquares(startX - 1, startY + 1);
+            uncoverSquares(startX + 1, startY - 1);
+            uncoverSquares(startX - 1, startY - 1);
+            uncoverSquares(startX - 1, startY);
+            uncoverSquares(startX, startY - 1);
+        }
+    }
     
     public GameSquare[][] getBoardState() {
         return squareTraits;
@@ -74,4 +136,9 @@ public class MinesweeperModel implements Observable {
     public GameSquare getSquareState(int row, int col) {
         return squareTraits[row][col];
     }
+    
+    public boolean getGameStatus() {
+        return activeGame;
+    }
+    
 }
