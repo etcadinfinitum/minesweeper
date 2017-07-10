@@ -8,7 +8,6 @@ public class MinesweeperModel {/// implements Observable {
         EASY, MEDIUM, HARD
     }
     
-    
     private GameSquare[][] squareTraits;
     private boolean activeGame;
     
