@@ -30,4 +30,8 @@ public class GameSquare {
         isSelected = true;
     }
     
+    public boolean getClicked() {
+        return isSelected;
+    }
+    
 }

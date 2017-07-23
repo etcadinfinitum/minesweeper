@@ -3,11 +3,6 @@ import java.util.Observable;
 
 public class MinesweeperModel {/// implements Observable {
     
-    
-    public enum GameDifficulty {
-        EASY, MEDIUM, HARD
-    }
-    
     private GameSquare[][] squareTraits;
     private boolean activeGame;
     
@@ -113,19 +108,22 @@ public class MinesweeperModel {/// implements Observable {
         }
     }
     
-    private void uncoverSquares(int startX, int startY) {
-        if (squareTraits[startX][startY].getHint() != 0) {
-            squareTraits[startX][startY].clicked();
+    private void uncoverSquares(int currX, int currY) {
+        // System.out.println("currX is " + currX + "; currY is " + currY);
+        if (currX < 0 || currY < 0 || currX >= squareTraits.length || currY >= squareTraits[0].length || squareTraits[currX][currY].getClicked()) {
+            
+        } else if (squareTraits[currX][currY].getHint() != 0) {
+            squareTraits[currX][currY].clicked();
         } else {
-            squareTraits[startX][startY].clicked();
-            uncoverSquares(startX + 1, startY);
-            uncoverSquares(startX + 1, startY + 1);
-            uncoverSquares(startX, startY + 1);
-            uncoverSquares(startX - 1, startY + 1);
-            uncoverSquares(startX + 1, startY - 1);
-            uncoverSquares(startX - 1, startY - 1);
-            uncoverSquares(startX - 1, startY);
-            uncoverSquares(startX, startY - 1);
+            squareTraits[currX][currY].clicked();
+            uncoverSquares(currX + 1, currY);
+            uncoverSquares(currX, currY + 1);
+            uncoverSquares(currX + 1, currY + 1);
+            uncoverSquares(currX - 1, currY);
+            uncoverSquares(currX, currY - 1);
+            uncoverSquares(currX - 1, currY - 1);
+            uncoverSquares(currX + 1, currY - 1);
+            uncoverSquares(currX + 1, currY + 1);
         }
     }
     
