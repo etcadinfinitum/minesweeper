@@ -1,11 +1,12 @@
 public class InitializeGame {
     
     public static void main(String[] args) {
-        private MinesweeperController myController = new MinesweeperController();
-        private MinesweeperView myGameWindow = new MinesweeperView();
-        myGameWindow.addObserver(myController);
-      
-        
+        // 
+        MinesweeperController controls = new MinesweeperController();
+        MinesweeperView view = new MinesweeperView((MinesweeperController) controls);
+        controls.knowView(view);
+        view.setVisible(true);
+    
     }
 
 }

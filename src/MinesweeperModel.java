@@ -1,12 +1,15 @@
 import java.util.Observable;
+import java.util.Observer;
 
-
-public class MinesweeperModel {/// implements Observable {
+public class MinesweeperModel extends Observable {
     
     private GameSquare[][] squareTraits;
     private boolean activeGame;
+    private boolean didUserWinGame;
     
-    public MinesweeperModel(int boardHeight, int boardWidth, GameDifficulty diff) {
+    public MinesweeperModel(Observer controls, int boardHeight, int boardWidth, GameDifficulty diff) {
+        super();
+        addObserver(controls);
         activeGame = true;
         squareTraits = new GameSquare[boardWidth][boardHeight];
         for (int row = 0; row < squareTraits.length; row++) {
@@ -16,16 +19,21 @@ public class MinesweeperModel {/// implements Observable {
         }
         determineSegmentMines(diff);
         determineSegmentValue();
+        System.out.println(countObservers());
+        setChanged();
+        System.out.println("model is changed? " + hasChanged());
+        notifyObservers(this);
+        
     }
     
     private void determineSegmentMines(GameDifficulty diff) {
         int mineQty = squareTraits.length * squareTraits[0].length;
         switch (diff) {
-            case EASY: mineQty = (int)Math.floor(mineQty / 10);
+            case EASY: mineQty = mineQty / 10;
                 break;
-            case MEDIUM: mineQty = (int)Math.floor(mineQty / 8);
+            case MEDIUM: mineQty = mineQty / 8;
                 break;
-            case HARD: mineQty = (int)Math.floor (mineQty / 6);
+            case HARD: mineQty = mineQty / 6;
                 break;
         }
         
@@ -106,6 +114,9 @@ public class MinesweeperModel {/// implements Observable {
         } else {
             uncoverSquares(buttonX, buttonY);
         }
+        isGameOver();
+        setChanged();
+        notifyObservers(this);
     }
     
     private void uncoverSquares(int currX, int currY) {
@@ -119,12 +130,34 @@ public class MinesweeperModel {/// implements Observable {
             uncoverSquares(currX + 1, currY);
             uncoverSquares(currX, currY + 1);
             uncoverSquares(currX + 1, currY + 1);
+            uncoverSquares(currX + 1, currY - 1);
             uncoverSquares(currX - 1, currY);
             uncoverSquares(currX, currY - 1);
             uncoverSquares(currX - 1, currY - 1);
-            uncoverSquares(currX + 1, currY - 1);
-            uncoverSquares(currX + 1, currY + 1);
+            uncoverSquares(currX - 1, currY + 1);
         }
+    }
+    
+    private void isGameOver() {
+        if (activeGame) {
+            boolean gameWon = true;
+            while (gameWon) {
+                for (int row = 0; row < squareTraits.length; row++) {
+                    for (int col = 0; col < squareTraits[row].length; col++) {
+                        if (!squareTraits[row][col].getClicked() && !squareTraits[row][col].getBomb()) {
+                            gameWon = false;
+                        }
+                    }
+                }
+            }
+            if (gameWon) {
+                didUserWinGame = true;
+                activeGame = false;
+            }
+        } else {
+            didUserWinGame = false;
+        }
+
     }
     
     public GameSquare[][] getBoardState() {
@@ -137,6 +170,38 @@ public class MinesweeperModel {/// implements Observable {
     
     public boolean getGameStatus() {
         return activeGame;
+    }
+    
+    public boolean didUserWin() {
+        return didUserWinGame;
+    }
+    
+    public MinesweeperModel getGame() {
+        return this;
+    }
+    
+    public String toString() {
+        String info = "";
+        info += "active game: " + activeGame;
+        for (int row = 0; row < squareTraits.length; row++) {
+            info += "\n";
+            for (int col = 0; col < squareTraits[row].length; col++) {
+                if (squareTraits[row][col].getBomb()) {
+                    info += "M";
+                } else if (squareTraits[row][col].getHint() > 0) {
+                    info += squareTraits[row][col].getHint();
+                } else {
+                    info += "-";
+                }
+                if (squareTraits[row][col].getClicked()) {
+                    info += "* ";
+                } else {
+                    info += "  ";
+                }
+            }
+        }
+        info += "\n";
+        return info;
     }
     
 }

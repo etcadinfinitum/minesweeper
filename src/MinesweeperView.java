@@ -1,24 +1,26 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JButton;
-import java.util.Math;
+import javax.swing.JLabel;
+import java.lang.Math;
 import java.util.ArrayList;
-import java.awt.ActionListener;
-import java.awt.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 
-public class MinesweeperView extends JPanel implements Observer {
-    
+public class MinesweeperView extends JFrame {
+
     private JPanel gamePanel;
-    private static boolean activeGame;
     private JButton newGame;
     private JButton highScores;
-    private JPanel[][] gameBoard;
+    private GameSquare[][] gameState;
+    private MinesweeperController controls;
+    private int squareSize = 25;
     
-    public MinesweeperView() {
+    public MinesweeperView(MinesweeperController controls) {
+        this.controls = controls;
         setSize(600,600);
         setLocation(100, 100);
-        setVisible(true);
         
         gamePanel = new JPanel();
         getContentPane().add(gamePanel);
@@ -30,11 +32,10 @@ public class MinesweeperView extends JPanel implements Observer {
         gamePanel.removeAll();
         
         newGame = new JButton("New Game");
-        newGame.setBounds(Math.floor((getContentPane().WIDTH - 100)/2), 75, 100, 50);
+        newGame.setBounds((int)Math.floor((getContentPane().WIDTH - 100)/2), 75, 100, 50);
         newGame.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                activeGame = true;
-                notifyObservers();
+                controls.startNewGame();
             }
         });
         gamePanel.add(newGame); 
@@ -43,52 +44,119 @@ public class MinesweeperView extends JPanel implements Observer {
         highScores.setBounds((getContentPane().WIDTH - 100)/2, 150, 100, 50);
         highScores.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                notifyObservers();
+                displayScores();
             }
         });
+        gamePanel.add(highScores);
         
+        return true;
     }
     
-
-    public void generateBoard(int boardWidth, int boardHeight) {
-        gameBoard = new JPanel[boardWidth][boardHeight];
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
-                gameBoard[row][col] = new JPanel();
-                gameBoard[row][col].setBounds(row * 10, col * 10, 10, 10);
-                gameBoard[row][col].addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        notifyObservers();
-                        
-                    }
-                });
-            }
-        }
+    public void displayScores() {
         
     }    
     
-    public void displayBoard() {
+    public void drawWin(GameSquare[][] gameState) {
         gamePanel.removeAll();
-        for (int row = 0; row < gameBoard.length; row++) {
-            for (int col = 0; col < gameBoard[row].length; col++) {
-                gamePanel.add(gameBoard[row][col]);
-                
+        for (int row = 0; row < gameState.length; row++) {
+            for (int col = 0; col < gameState[row].length; col++) {
+                if (gameState[row][col].getClicked()) {
+                    if (gameState[row][col].getBomb()) {
+                        JLabel thisLabel = new JLabel("M");
+                        thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                        gamePanel.add(thisLabel);
+                    } else {
+                        if (gameState[row][col].getHint() > 0) {
+                            JLabel thisLabel = new JLabel(Integer.toString(gameState[row][col].getHint()));
+                            thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                            gamePanel.add(thisLabel);
+                        }
+                    }
+
+                } else {
+                    JButton thisButton = new JButton();
+                    thisButton.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                    thisButton.putClientProperty("column", col);
+                    thisButton.putClientProperty("row", row);
+                    thisButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            JButton thisButton = (JButton) e.getSource();
+                            controls.userChoice((int)thisButton.getClientProperty("row"), (int)thisButton.getClientProperty("column"));
+                        }
+                    });
+                    gamePanel.add(thisButton);
+                }
             }
         }
-        this.repaint();
+        repaint();
     }
     
-    
+    public void drawLoss(GameSquare[][] gameState) {
+        gamePanel.removeAll();
+        for (int row = 0; row < gameState.length; row++) {
+            for (int col = 0; col < gameState[row].length; col++) {
+                if (gameState[row][col].getClicked()) {
+                    if (gameState[row][col].getBomb()) {
+                        JLabel thisLabel = new JLabel("M");
+                        thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                        gamePanel.add(thisLabel);
+                    } else {
+                        JLabel thisLabel = new JLabel(Integer.toString(gameState[row][col].getHint()));
+                        thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                        gamePanel.add(thisLabel);
+                    }
 
-  public void update(Observable o, Object arg) {
-      displayBoard();
-      
-  }
+                } else {
+                    JButton thisButton = new JButton();
+                    thisButton.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                    thisButton.putClientProperty("column", col);
+                    thisButton.putClientProperty("row", row);
+                    thisButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            JButton thisButton = (JButton) e.getSource();
+                            controls.userChoice((int)thisButton.getClientProperty("row"), (int)thisButton.getClientProperty("column"));
+                        }
+                    });
+                    gamePanel.add(thisButton);
+                }
+            }
+        }
+        repaint();
+    }
     
-    
-    
-    
-    
+    public void drawGame(GameSquare[][] gameState) {
+        gamePanel.removeAll();
+        for (int row = 0; row < gameState.length; row++) {
+            for (int col = 0; col < gameState[row].length; col++) {
+                if (gameState[row][col].getClicked()) {
+                    if (gameState[row][col].getBomb()) {
+                        JLabel thisLabel = new JLabel("M");
+                        thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                        gamePanel.add(thisLabel);
+                    } else {
+                        JLabel thisLabel = new JLabel(Integer.toString(gameState[row][col].getHint()));
+                        thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                        gamePanel.add(thisLabel);
+                    }
+
+                } else {
+                    JButton thisButton = new JButton();
+                    thisButton.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                    thisButton.putClientProperty("column", col);
+                    thisButton.putClientProperty("row", row);
+                    thisButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            JButton thisButton = (JButton) e.getSource();
+                            controls.userChoice((int)thisButton.getClientProperty("row"), (int)thisButton.getClientProperty("column"));
+                        }
+                    });
+                    gamePanel.add(thisButton);
+                }
+            }
+        }
+        repaint();
+    }
+
     
     
 }
