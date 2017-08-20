@@ -15,6 +15,7 @@ public class MinesweeperView extends JFrame {
     private JButton highScores;
     private GameSquare[][] gameState;
     private MinesweeperController controls;
+    private JButton[][] boardButtons;
     private int squareSize = 25;
     
     public MinesweeperView(MinesweeperController controls) {
@@ -55,9 +56,11 @@ public class MinesweeperView extends JFrame {
     public void displayScores() {
         
     }    
-    
+
+    // draw win
+    /*
     public void drawWin(GameSquare[][] gameState) {
-        gamePanel.removeAll();
+        // gamePanel.removeAll();
         for (int row = 0; row < gameState.length; row++) {
             for (int col = 0; col < gameState[row].length; col++) {
                 if (gameState[row][col].getClicked()) {
@@ -90,7 +93,10 @@ public class MinesweeperView extends JFrame {
         }
         repaint();
     }
+    */
     
+    // draw loss
+    /*
     public void drawLoss(GameSquare[][] gameState) {
         gamePanel.removeAll();
         for (int row = 0; row < gameState.length; row++) {
@@ -123,28 +129,35 @@ public class MinesweeperView extends JFrame {
         }
         repaint();
     }
+    */
     
     public void drawGame(GameSquare[][] gameState) {
-        gamePanel.removeAll();
+        //gamePanel.removeAll();
         for (int row = 0; row < gameState.length; row++) {
             for (int col = 0; col < gameState[row].length; col++) {
-                if (gameState[row][col].getClicked()) {
                     if (gameState[row][col].getBomb()) {
                         JLabel thisLabel = new JLabel("M");
                         thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
                         gamePanel.add(thisLabel);
                     } else {
-                        JLabel thisLabel = new JLabel(Integer.toString(gameState[row][col].getHint()));
-                        thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
-                        gamePanel.add(thisLabel);
+                        if (gameState[row][col].getHint == 0) {
+                            JLabel thisLabel = new JLabel("-");
+                            thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                            gamePanel.add(thisLabel);    
+                        } else {
+                            JLabel thisLabel = new JLabel(Integer.toString(gameState[row][col].getHint()));
+                            thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                            gamePanel.add(thisLabel);
+                        }
+                        
                     }
 
-                } else {
-                    JButton thisButton = new JButton();
-                    thisButton.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
-                    thisButton.putClientProperty("column", col);
-                    thisButton.putClientProperty("row", row);
-                    thisButton.addActionListener(new ActionListener() {
+                    
+                    boardButtons[row][col] = new JButton();
+                    boardButtons[row][col].setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
+                    boardButtons[row][col].putClientProperty("column", col);
+                    boardButtons[row][col].putClientProperty("row", row);
+                    boardButtons[row][col].addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             JButton thisButton = (JButton) e.getSource();
                             controls.userChoice((int)thisButton.getClientProperty("row"), (int)thisButton.getClientProperty("column"));
@@ -155,6 +168,17 @@ public class MinesweeperView extends JFrame {
             }
         }
         repaint();
+    }
+    
+    public void updateGame(GameSquare[][] gameState) {
+        for (int row = 0; row < gameState.length; row++) {
+            for (int col = 0; col < gameState[row].length; col++) {
+                if (gameState[row][col].getClicked()) {
+                    gamePanel.remove(boardButtons[row][col]);
+                    gamePanel.repaint();
+                }
+            }
+        }
     }
 
     

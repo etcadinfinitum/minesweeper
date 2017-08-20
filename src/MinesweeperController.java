@@ -6,9 +6,11 @@ public class MinesweeperController implements Observer {
     private MinesweeperModel model;
     private MinesweeperView view;
     private GameSquare[][] boardState;
+    private boolean currentGame;
 
     public void MinesweeperController() {
         model = null;
+        currentGame = false;
     }
     
     public void startNewGame() {
@@ -22,6 +24,7 @@ public class MinesweeperController implements Observer {
     
     @Override
     public void update(Observable o, Object arg) {
+        /*
         // System.out.println("calling runUpdates() in Controller class");
         model = (MinesweeperModel) arg;
         // System.out.println(model.toString());
@@ -34,6 +37,14 @@ public class MinesweeperController implements Observer {
         } else {
             System.out.println("you lost!");
             view.drawLoss(model.getBoardState());
+        }
+        */
+        model = (MinesweeperModel) arg;
+        if (currentGame) {
+            view.updateGame(model.getBoardState());
+        } else {
+            view.drawGame(model.getBoardState());
+            currentGame = true;
         }
     }
     
