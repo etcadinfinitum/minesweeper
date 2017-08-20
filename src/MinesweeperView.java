@@ -140,7 +140,7 @@ public class MinesweeperView extends JFrame {
                         thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
                         gamePanel.add(thisLabel);
                     } else {
-                        if (gameState[row][col].getHint == 0) {
+                        if (gameState[row][col].getHint() == 0) {
                             JLabel thisLabel = new JLabel("-");
                             thisLabel.setBounds(squareSize * col, squareSize * row, squareSize, squareSize);
                             gamePanel.add(thisLabel);    
@@ -163,10 +163,10 @@ public class MinesweeperView extends JFrame {
                             controls.userChoice((int)thisButton.getClientProperty("row"), (int)thisButton.getClientProperty("column"));
                         }
                     });
-                    gamePanel.add(thisButton);
+                    gamePanel.add(boardButtons[row][col]);
                 }
             }
-        }
+        
         repaint();
     }
     
