@@ -19,9 +19,7 @@ public class MinesweeperModel extends Observable {
         }
         determineSegmentMines(diff);
         determineSegmentValue();
-        System.out.println(countObservers());
         setChanged();
-        System.out.println("model is changed? " + hasChanged());
         notifyObservers(this);
         
     }
@@ -55,51 +53,31 @@ public class MinesweeperModel extends Observable {
         for (int row = 0; row < squareTraits.length; row++) {
             for (int col = 0; col < squareTraits[row].length; col++) {
                 if (squareTraits[row][col].getBomb()) {
-                    /*
-                    It would be wise to set up recursive method for incrementing
-                    surrounding squares?
-                    */
-                    
-                    int rowMin;
-                    int rowMax;
-                    int colMin;
-                    int colMax;
-                    if (row == 0) {
-                        rowMin = 0;
-                    } else {
-                        rowMin = -1;
-                    }
-                    if (row == squareTraits.length - 1) {
-                        rowMax = 0;
-                    } else {
-                        rowMax = 1;
-                    }
-                    if (col == 0) {
-                        colMin = 0;
-                    } else {
-                        colMin = -1;
-                    }
-                    if (col == squareTraits[row].length - 1) {
-                        colMax = 0;
-                    } else {
-                        colMax = 1;
-                    }
-                    
-                    for (int checkRow = (row + rowMin); checkRow <= (row + rowMax); checkRow++) {
-                        for (int checkCol = (col + colMin); checkCol <= (col + colMax); checkCol++) {
-                            squareTraits[checkRow][checkCol].incrementHint();
-                        }
-                    }
-                    
+                    increment(row, col, 0);
                 }
             }
         }
     }
-  
-  
-    /*
-    External accessors and manipulators below
-    */
+    
+    private void increment(int currX, int currY, int reps) {
+        if (currX < 0 || currY < 0 || currX >= squareTraits.length || 
+                currY >= squareTraits[0].length || reps > 1) {
+            // do nothing - resolve recursion
+        } else {
+            if (reps > 0) {
+                squareTraits[currX][currY].incrementHint();
+            }
+            reps++;
+            increment(currX + 1, currY + 1, reps);
+            increment(currX - 1, currY + 1, reps);
+            increment(currX + 1, currY - 1, reps);
+            increment(currX - 1, currY - 1, reps);
+            increment(currX - 1, currY, reps);
+            increment(currX + 1, currY, reps);
+            increment(currX, currY + 1, reps);
+            increment(currX, currY - 1, reps);
+        }
+    }
     
     public void changeBoardState(int buttonX, int buttonY) {
         if (squareTraits[buttonX][buttonY].getBomb()) {
@@ -120,9 +98,9 @@ public class MinesweeperModel extends Observable {
     }
     
     private void uncoverSquares(int currX, int currY) {
-        // System.out.println("currX is " + currX + "; currY is " + currY);
-        if (currX < 0 || currY < 0 || currX >= squareTraits.length || currY >= squareTraits[0].length || squareTraits[currX][currY].getClicked()) {
-            
+        if (currX < 0 || currY < 0 || currX >= squareTraits.length || 
+                currY >= squareTraits[0].length || squareTraits[currX][currY].getClicked()) {
+            // do nothing - resolve recursive call
         } else if (squareTraits[currX][currY].getHint() != 0) {
             squareTraits[currX][currY].clicked();
         } else {
@@ -141,12 +119,10 @@ public class MinesweeperModel extends Observable {
     private void isGameOver() {
         if (activeGame) {
             boolean gameWon = true;
-            while (gameWon) {
-                for (int row = 0; row < squareTraits.length; row++) {
-                    for (int col = 0; col < squareTraits[row].length; col++) {
-                        if (!squareTraits[row][col].getClicked() && !squareTraits[row][col].getBomb()) {
-                            gameWon = false;
-                        }
+            for (int row = 0; row < squareTraits.length; row++) {
+                for (int col = 0; col < squareTraits[row].length; col++) {
+                    if (!squareTraits[row][col].getClicked() && !squareTraits[row][col].getBomb()) {
+                        gameWon = false;
                     }
                 }
             }
@@ -163,45 +139,23 @@ public class MinesweeperModel extends Observable {
     public GameSquare[][] getBoardState() {
         return squareTraits;
     }
-  
-    public GameSquare getSquareState(int row, int col) {
-        return squareTraits[row][col];
-    }
     
+    /**
+     * Indicates whether the game is still in progress (if returns true, the user 
+     * has not won or lost yet).
+     * @return A T/F flag indicating whether the game is still active
+     */
     public boolean getGameStatus() {
         return activeGame;
     }
     
+    /**
+     * If getGameStatus() returns true, this method will be invoked. The method 
+     * returns a T/F value indicating whether the user won or lost the game.
+     * @return A T/F flag indicating whether the user won the game
+     */
     public boolean didUserWin() {
         return didUserWinGame;
-    }
-    
-    public MinesweeperModel getGame() {
-        return this;
-    }
-    
-    public String toString() {
-        String info = "";
-        info += "active game: " + activeGame;
-        for (int row = 0; row < squareTraits.length; row++) {
-            info += "\n";
-            for (int col = 0; col < squareTraits[row].length; col++) {
-                if (squareTraits[row][col].getBomb()) {
-                    info += "M";
-                } else if (squareTraits[row][col].getHint() > 0) {
-                    info += squareTraits[row][col].getHint();
-                } else {
-                    info += "-";
-                }
-                if (squareTraits[row][col].getClicked()) {
-                    info += "* ";
-                } else {
-                    info += "  ";
-                }
-            }
-        }
-        info += "\n";
-        return info;
     }
     
 }
