@@ -21,7 +21,6 @@ public class MinesweeperModel extends Observable {
         determineSegmentValue();
         setChanged();
         notifyObservers(this);
-        
     }
     
     private void determineSegmentMines(GameDifficulty diff) {
@@ -32,6 +31,8 @@ public class MinesweeperModel extends Observable {
             case MEDIUM: mineQty = mineQty / 8;
                 break;
             case HARD: mineQty = mineQty / 6;
+                break;
+            case DUMMY: mineQty = 1;
                 break;
         }
         
@@ -62,7 +63,7 @@ public class MinesweeperModel extends Observable {
     private void increment(int currX, int currY, int reps) {
         if (currX < 0 || currY < 0 || currX >= squareTraits.length || 
                 currY >= squareTraits[0].length || reps > 1) {
-            // do nothing - resolve recursion
+            
         } else {
             if (reps > 0) {
                 squareTraits[currX][currY].incrementHint();

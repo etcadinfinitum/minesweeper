@@ -1,5 +1,5 @@
 public enum GameDifficulty {
     
-    EASY, MEDIUM, HARD
+    EASY, MEDIUM, HARD, DUMMY
     
 }

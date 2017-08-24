@@ -1,4 +1,4 @@
-public class ScoreKeeper {
+public class ScoreKeeper implements Comparable {
     
     private String name;
     private int time;
@@ -24,6 +24,11 @@ public class ScoreKeeper {
     
     public String toString() {
         return Integer.toString(time) + " by " + name;
+    }
+    
+    public int compareTo(Object otherScore) {
+        int otherTime = ((ScoreKeeper) otherScore).getTime();
+        return this.getTime() - otherTime;
     }
     
 }

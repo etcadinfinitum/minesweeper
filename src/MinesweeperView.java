@@ -9,14 +9,12 @@ import javax.swing.border.Border;
 import javax.swing.JTextField;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import javax.swing.border.EtchedBorder;
 
 public class MinesweeperView extends JFrame {
 
-    private GameSquare[][] gameState;
     private MinesweeperController controls;
     private JButton[][] boardButtons;
     private JPanel[][] boardPanels;
@@ -34,32 +32,36 @@ public class MinesweeperView extends JFrame {
     private Color shade6 = new Color(0, 128, 129);
     private Color shade7 = Color.BLACK;
     private Color shade8 = Color.LIGHT_GRAY;
-    private ArrayList scores;
+    private ArrayList<ArrayList<ScoreKeeper>> scores;
     private long startTime;
     private JTextField name;
     private GameDifficulty currentGameLevel;
     private boolean highScore = false;
+    private GameListener buttonListener;
+    private int scoreQty = 10;
     
     public MinesweeperView(MinesweeperController controls) {
         this.controls = controls;
-        setSize(600,700);
+        setSize(640,740);
         setLocation(100, 0);
         menuPanel = new JPanel();
         menuPanel.setLayout(null);
-        menuPanel.setBounds(0, 0, 600, 100);
+        menuPanel.setBounds(0, 0, 640, 100);
         getContentPane().add(menuPanel);
         yOffset = menuPanel.getHeight();
         gamePanel = new JLayeredPane();
         gamePanel.setLayout(null);
-        gamePanel.setBounds(0, 100, 600, 600);
+        gamePanel.setBounds(0, 100, 640, 640);
         defaultBorder = BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1);
         getContentPane().add(gamePanel);
         setResizable(false);
         generateMenu();
-        scores = new ArrayList(3);
+        scores = new ArrayList<ArrayList<ScoreKeeper>>(3);
         for (int i = 0; i < 3; i++) {
             scores.add(new ArrayList<ScoreKeeper>(6));
         }
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        buttonListener = new GameListener();
     }
     
     public void generateMenu() {
@@ -85,78 +87,12 @@ public class MinesweeperView extends JFrame {
         repaint();
     }
     
-    public void displayScores() {
-        Border leaderBoardBorder = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
-        gamePanel.removeAll();
-        
-        JLabel easyScores = new JLabel();
-        easyScores.setBounds(25, 125, 167, 425);
-        Border easyBorder = BorderFactory.createTitledBorder(defaultBorder, "Easy");
-        easyScores.setBorder(easyBorder);
-        String easyText = "";
-        if (((ArrayList<ScoreKeeper>)scores.get(0)).isEmpty()) {
-            easyText += "No leaders yet";
-        } else {
-            for (int i = 0; i < 5; i++) {
-                easyText += Integer.toString(i + 1);
-                easyText += ". " + ((ArrayList<ScoreKeeper>)scores.get(0)).get(4 - i).toString();
-                easyText += "\n";
-            }
-        }
-        easyScores.setText(easyText);
-        gamePanel.add(easyScores);
-        
-        JLabel medScores = new JLabel();
-        medScores.setBounds(217, 125, 167, 425);
-        Border medBorder = BorderFactory.createTitledBorder(defaultBorder, "Medium");
-        medScores.setBorder(medBorder);        
-        String medText = "";
-        if (((ArrayList<ScoreKeeper>)scores.get(1)).isEmpty()) {
-            medText += "No leaders yet";
-        } else {
-            for (int i = 0; i < 5; i++) {
-                //if ()
-                medText += Integer.toString(i + 1);
-                medText += ". " + ((ArrayList<ScoreKeeper>)scores.get(1)).get(4 - i).toString();
-                medText += "\n";
-            }
-        }
-        medScores.setText(medText);
-        gamePanel.add(medScores);
-
-        JLabel hardScores = new JLabel();
-        hardScores.setBounds(409, 125, 167, 425);
-        Border hardBorder = BorderFactory.createTitledBorder(defaultBorder, "Medium");
-        hardScores.setBorder(hardBorder);        
-        String hardText = "";
-        if (((ArrayList<ScoreKeeper>)scores.get(1)).isEmpty()) {
-            hardText += "No leaders yet";
-        } else {
-            for (int i = 0; i < 5; i++) {
-                hardText += Integer.toString(i + 1);
-                hardText += ". " + ((ArrayList<ScoreKeeper>)scores.get(1)).get(4 - i).toString();
-                hardText += "\n";
-            }
-        }
-        hardScores.setText(hardText);
-        gamePanel.add(hardScores);
-        
-        JButton backToMenu = new JButton("Return to Menu");
-        backToMenu.setBounds(200, 575, 200, 100);
-        backToMenu.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                generateMenu();
-            }
-        });
-        gamePanel.add(backToMenu);
-    }    
-
     public void drawGame(GameSquare[][] gameState) {
         menuPanel.removeAll();
         gamePanel.removeAll();
         gamePanel.setBorder(defaultBorder);
         
-        xOffset = (600 - (gameState.length * squareSize)) / 2;
+        xOffset = ((600 - (gameState.length * squareSize)) / 2) + 20;
         yOffset = ((600 - (gameState[0].length * squareSize)) / 2) + 100;
         
         boardButtons = new JButton[gameState.length][gameState[0].length];
@@ -204,15 +140,9 @@ public class MinesweeperView extends JFrame {
                 gamePanel.add(boardButtons[row][col], new Integer(2));
                 boardButtons[row][col].setBounds((squareSize * col) + xOffset, 
                         (squareSize * row) + yOffset, squareSize, squareSize);
-                boardButtons[row][col].putClientProperty("column", col);
+                boardButtons[row][col].putClientProperty("col", col);
                 boardButtons[row][col].putClientProperty("row", row);
-                boardButtons[row][col].addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        JButton thisButton = (JButton) e.getSource();
-                        controls.userChoice((int)thisButton.getClientProperty("row"), 
-                                (int)thisButton.getClientProperty("column"));
-                    }
-                });
+                boardButtons[row][col].addActionListener(buttonListener);
             }
         }
         repaint();
@@ -243,42 +173,30 @@ public class MinesweeperView extends JFrame {
         }
         gamePanel.repaint();
         
-        // popup frame
         JFrame gameOverPopup = new JFrame();
         gameOverPopup.setResizable(false);
         gameOverPopup.setLayout(null);
-        gameOverPopup.setBounds(100, 500, 200, 200);
-        // popup label
+        gameOverPopup.setBounds(50, 300, 200, 230);
         JLabel info = new JLabel();
         info.setBounds(20, 20, 160, 80);
         gameOverPopup.getContentPane().add(info);
-        // popup button
         JButton returnToMenu = new JButton();
         returnToMenu.setBounds(50, 125, 100, 50);
         gameOverPopup.getContentPane().add(returnToMenu);
 
         if (didUserWin) {
-            if (currentGameLevel == GameDifficulty.EASY) {
-                if (((ArrayList<ScoreKeeper>)scores.get(0)).size() < 5
-                     || ((ArrayList<ScoreKeeper>)scores.get(0)).get(4).getTime() > elapsedTime) {
-                    highScore = true;
-                }
-            } else if (currentGameLevel == GameDifficulty.MEDIUM) {
-                if (((ArrayList<ScoreKeeper>)scores.get(1)).size() < 5
-                     || ((ArrayList<ScoreKeeper>)scores.get(1)).get(4).getTime() > elapsedTime) {
-                    highScore = true;
-                }
-            } else {
-                if (((ArrayList<ScoreKeeper>)scores.get(2)).size() < 5
-                     || ((ArrayList<ScoreKeeper>)scores.get(2)).get(4).getTime() > elapsedTime) {
-                    highScore = true;
-                }
+            int scoreIndex = getScoreArray();
+            if (((ArrayList<ScoreKeeper>)scores.get(scoreIndex)).size() < 5
+                 || ((ArrayList<ScoreKeeper>)scores.get(scoreIndex)).get(4).getTime() > elapsedTime) {
+                highScore = true;
             }
             gameOverPopup.setSize(200, 300);
             returnToMenu.setLocation(50, 225);
             name = new JTextField("Anonymous");
-            name.setBounds(25, 125, 150, 50);
+            name.setBounds(25, 145, 150, 30);
+            info.setSize(160,95);
             if (highScore) {
+                gameOverPopup.setSize(200,330);
                 gameOverPopup.setTitle("New High Score!");
                 gameOverPopup.add(name);
                 info.setText("<html>You Won! <br>Your score is: " + elapsedTime + 
@@ -293,12 +211,10 @@ public class MinesweeperView extends JFrame {
 
             returnToMenu.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    generateMenu();
+                    ScoreKeeper newHighScore = new ScoreKeeper(name.getText(), elapsedTime, currentGameLevel);
+                    addHighScore(newHighScore);
                     gameOverPopup.dispose();
-                    if (highScore) {
-                        ScoreKeeper newHighScore = new ScoreKeeper(name.getText(), elapsedTime, currentGameLevel);
-                        addHighScore(newHighScore);
-                    }
+                    generateMenu();
                 }
             });
         } else {
@@ -323,7 +239,7 @@ public class MinesweeperView extends JFrame {
     private void pickSettings() {
         int spacing = (600 - 300) / 4;
         JButton easy = new JButton("Easy");
-        easy.setBounds(spacing, 150, 100, 50);
+        easy.setBounds(spacing + 20, 150, 100, 50);
         easy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 gamePanel.removeAll();
@@ -334,7 +250,7 @@ public class MinesweeperView extends JFrame {
         gamePanel.add(easy);
         
         JButton medium = new JButton("Medium");
-        medium.setBounds(spacing * 2 + 100, 150, 100, 50);
+        medium.setBounds(spacing * 2 + 100 + 20, 150, 100, 50);
         medium.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 gamePanel.removeAll();
@@ -345,7 +261,7 @@ public class MinesweeperView extends JFrame {
         gamePanel.add(medium);
         
         JButton hard = new JButton("Hard");
-        hard.setBounds(spacing * 3 + 200, 150, 100, 50);
+        hard.setBounds(spacing * 3 + 200 + 20, 150, 100, 50);
         hard.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 gamePanel.removeAll();
@@ -354,70 +270,117 @@ public class MinesweeperView extends JFrame {
             }
         });
         gamePanel.add(hard);
+
+        JButton dummy = new JButton("dum dum");
+        dummy.setBounds(spacing * 3 + 200, 300, 100, 50);
+        dummy.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                gamePanel.removeAll();
+                controls.startNewGame(GameDifficulty.DUMMY, 24, 24);
+                currentGameLevel = GameDifficulty.DUMMY;
+            }
+        });
+        gamePanel.add(dummy);
+
     }
-    
-    public int getSquareSize() {
-        return squareSize;
-    }
-    
-    public Dimension getBoardPanel() {
-        Dimension r = new Dimension(gamePanel.getWidth(), gamePanel.getHeight());
-        return r;
-    }
-    
-    
-    private void addHighScore(ScoreKeeper newHighScore) {
-        boolean isAdded = false;
-        if (currentGameLevel == GameDifficulty.EASY) {
-            for (int i = 0; i < ((ArrayList<ScoreKeeper>)scores.get(0)).size() - 1; i++) {
-                while (!isAdded) {
-                    if (((ArrayList<ScoreKeeper>)scores.get(0)).get(i).getTime() > newHighScore.getTime() &&
-                            ((ArrayList<ScoreKeeper>)scores.get(0)).get(i + 1).getTime() <= newHighScore.getTime()) {
-                        ((ArrayList<ScoreKeeper>)scores.get(0)).add(i + 1, newHighScore);
-                        ((ArrayList<ScoreKeeper>)scores.get(0)).remove(5);
-                        isAdded = true;
-                    }
-                }
-            }
-            if (!isAdded) {
-                ((ArrayList<ScoreKeeper>)scores.get(0)).add(4, newHighScore);
-                ((ArrayList<ScoreKeeper>)scores.get(0)).remove(5);
-                isAdded = true;
-            }
-        } else if (currentGameLevel == GameDifficulty.MEDIUM) {
-            for (int i = 0; i < 4; i++) {
-                while (!isAdded) {
-                    if (((ArrayList<ScoreKeeper>)scores.get(1)).get(i).getTime() > newHighScore.getTime() &&
-                            ((ArrayList<ScoreKeeper>)scores.get(1)).get(i + 1).getTime() <= newHighScore.getTime()) {
-                        ((ArrayList<ScoreKeeper>)scores.get(1)).add(i + 1, newHighScore);
-                        ((ArrayList<ScoreKeeper>)scores.get(1)).remove(5);
-                        isAdded = true;
-                    }
-                }
-            }
-            if (!isAdded) {
-                ((ArrayList<ScoreKeeper>)scores.get(1)).add(4, newHighScore);
-                ((ArrayList<ScoreKeeper>)scores.get(1)).remove(5);
-                isAdded = true;
-            }
+
+    public void displayScores() {
+        Border leaderBoardBorder = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
+        gamePanel.removeAll();
+        menuPanel.removeAll();
+        
+        JLabel easyScores = new JLabel();
+        easyScores.setBounds(25, 125, 167, 425);
+        Border easyBorder = BorderFactory.createTitledBorder(leaderBoardBorder, "Easy");
+        easyScores.setBorder(easyBorder);
+        String easyText = "";
+        if (((ArrayList<ScoreKeeper>)scores.get(0)).isEmpty()) {
+            easyText += "No leaders yet";
         } else {
-            for (int i = 0; i < 4; i++) {
-                while (!isAdded) {
-                    if (((ArrayList<ScoreKeeper>)scores.get(2)).get(i).getTime() > newHighScore.getTime() &&
-                            ((ArrayList<ScoreKeeper>)scores.get(2)).get(i + 1).getTime() <= newHighScore.getTime()) {
-                        ((ArrayList<ScoreKeeper>)scores.get(2)).add(i + 1, newHighScore);
-                        ((ArrayList<ScoreKeeper>)scores.get(2)).remove(5);
-                        isAdded = true;
-                    }
-                }
-            }
-            if (!isAdded) {
-                ((ArrayList<ScoreKeeper>)scores.get(2)).add(4, newHighScore);
-                ((ArrayList<ScoreKeeper>)scores.get(2)).remove(5);
-                isAdded = true;
+            for (int i = 0; i < ((ArrayList<ScoreKeeper>)scores.get(0)).size(); i++) {
+                easyText += Integer.toString(i + 1);
+                
+                easyText += ". " + ((ArrayList<ScoreKeeper>)scores.get(0)).get(i).toString();
+                easyText += "<br>";
             }
         }
+        easyScores.setText("<html>" + easyText);
+        gamePanel.add(easyScores);
+        
+        JLabel medScores = new JLabel();
+        medScores.setBounds(217, 125, 167, 425);
+        Border medBorder = BorderFactory.createTitledBorder(leaderBoardBorder, "Medium");
+        medScores.setBorder(medBorder);        
+        String medText = "";
+        if (((ArrayList<ScoreKeeper>)scores.get(1)).isEmpty()) {
+            medText += "No leaders yet";
+        } else {
+            for (int i = 0; i < ((ArrayList<ScoreKeeper>)scores.get(1)).size(); i++) {
+                //if ()
+                medText += Integer.toString(i + 1);
+                medText += ". " + ((ArrayList<ScoreKeeper>)scores.get(1)).get(i).toString();
+                medText += "<br>";
+            }
+        }
+        medScores.setText("<html>" + medText);
+        gamePanel.add(medScores);
+
+        JLabel hardScores = new JLabel();
+        hardScores.setBounds(409, 125, 167, 425);
+        Border hardBorder = BorderFactory.createTitledBorder(leaderBoardBorder, "Hard");
+        hardScores.setBorder(hardBorder);        
+        String hardText = "";
+        if (((ArrayList<ScoreKeeper>)scores.get(2)).isEmpty()) {
+            hardText += "No leaders yet";
+        } else {
+            for (int i = 0; i < ((ArrayList<ScoreKeeper>)scores.get(2)).size(); i++) {
+                hardText += Integer.toString(i + 1);
+                hardText += ". " + ((ArrayList<ScoreKeeper>)scores.get(2)).get(i).toString();
+                hardText += "<br>";
+            }
+        }
+        hardScores.setText("<html>" + hardText);
+        gamePanel.add(hardScores);
+        
+        JButton backToMenu = new JButton("Return to Menu");
+        backToMenu.setBounds(200, 575, 200, 100);
+        backToMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                generateMenu();
+            }
+        });
+        gamePanel.add(backToMenu);
     }
     
+    private boolean addHighScore(ScoreKeeper newHighScore) {
+        boolean isAdded = false;
+        int scoreIndex = getScoreArray();
+        ((ArrayList<ScoreKeeper>)scores.get(scoreIndex)).add(newHighScore);
+        Collections.sort(((ArrayList<ScoreKeeper>)scores.get(scoreIndex)));
+        return true;
+    }
+    
+    private int getScoreArray() {
+        int index = -1;
+        switch (currentGameLevel) {
+            case EASY : index = 0;
+                break;
+            case DUMMY : index = 0;
+                break;
+            case MEDIUM : index = 1;
+                break;
+            case HARD : index = 2;
+                break;
+        }
+        return index;
+    }
+    
+    public class GameListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            JButton thisButton = (JButton) e.getSource();
+            controls.userChoice((int)thisButton.getClientProperty("row"), 
+                    (int)thisButton.getClientProperty("col"));            
+        }
+    }
     
 }
