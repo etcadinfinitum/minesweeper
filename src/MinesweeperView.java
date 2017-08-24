@@ -270,8 +270,8 @@ public class MinesweeperView extends JFrame {
             }
         });
         gamePanel.add(hard);
-
-        JButton dummy = new JButton("dum dum");
+/*
+        JButton dummy = new JButton(" ledum dum");
         dummy.setBounds(spacing * 3 + 200, 300, 100, 50);
         dummy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -281,7 +281,7 @@ public class MinesweeperView extends JFrame {
             }
         });
         gamePanel.add(dummy);
-
+*/
     }
 
     public void displayScores() {
